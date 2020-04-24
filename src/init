@@ -1,0 +1,22 @@
+#!/usr/bin/env php
+<?php
+
+$root = str_replace('\\', '/', __DIR__);
+$paths = ['config/params/params-local.php'];
+
+setCookieValidationKey($root, $paths);
+
+function setCookieValidationKey($root, $paths)
+{
+    foreach ($paths as $file) {
+        echo "generate cookie validation key in $file\n";
+        $file = $root . '/' . $file;
+        $length = 32;
+        $bytes = openssl_random_pseudo_bytes($length);
+        $key = strtr(substr(base64_encode($bytes), 0, $length), '+/=', '_-.');
+        $content = preg_replace('/(("|\')cookieValidationKey("|\')\s*=>\s*)(""|\'\')/', "\\1'$key'", file_get_contents($file));
+        file_put_contents($file, $content);
+    }
+}
+
+
